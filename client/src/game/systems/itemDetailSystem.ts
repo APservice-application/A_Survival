@@ -21,7 +21,7 @@ export type ItemLongDetail = ItemShortDetail & {
 };
 
 export type ItemDetailFact = {
-  key: "usage" | "stack-limit" | "attack-damage" | "plant-soil" | "plant-effect" | "placeable-block" | "tool-tag";
+  key: "usage" | "stack-limit" | "attack-damage" | "weapon-tradeoff" | "plant-soil" | "plant-effect" | "placeable-block" | "tool-tag";
   label: string;
   value: string;
   available: boolean;
@@ -82,7 +82,9 @@ export function getItemCategoryDetail(definition: ItemDefinition, instance?: Ite
 
   if (category === "weapon") {
     unavailable.push("attack-damage");
+    const tradeOff = definition.category === "sword" ? "ประชิดหนัก · ชาร์จช้า · ดาเมจสูง · เคลื่อนที่ช้าขณะชาร์จ" : definition.category === "bow" ? "ไกลแม่น · คริติคอลตามระยะ · กระสุน/ลูกธนูจำกัด · ต้องเล็ง" : "พลังงาน · ร้อนสะสมต้องคูลดาวน์ · เดินช้าขณะยิง · จัดการความร้อนสำคัญ";
     facts.push(fact("attack-damage", "พลังโจมตี", "ยังไม่มีข้อมูล", false, "ItemDefinition ปัจจุบันยังไม่มี field เจ้าของค่าความเสียหาย จึงไม่คำนวณหรือสร้างตัวเลขแทน"));
+    facts.push(fact("weapon-tradeoff", "ข้อแลกเปลี่ยน", tradeOff));
   }
   if (category === "plant") {
     facts.push(fact("plant-soil", "ดินที่ใช้ปลูก", definition.soilId ?? "ยังไม่มีข้อมูล", Boolean(definition.soilId), definition.soilId ? undefined : "seed definition ไม่มี soilId ที่ยืนยันได้"));
