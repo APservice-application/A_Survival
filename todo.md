@@ -61,7 +61,7 @@
 - [x] เพิ่มระบบจัดสวนและการตกแต่งบ้านที่ใช้ item catalog เดียวกับคลังไอเทม การคราฟต์ และการบันทึกเซฟ
 - [x] ทำให้ทุกการเปลี่ยนหน้าและเปลี่ยนฉากผ่าน loading transition พร้อม motion และ UI ธีมปลายทาง แม้ฉากนั้นถูก cache แล้ว
 - [x] แคช game shell และ bundle ของแผนที่ที่เคยดาวน์โหลดใน Chrome เพื่อให้ฉากที่ดาวน์โหลดแล้วเปิดเล่นซ้ำแบบออฟไลน์ได้
-- [ ] สร้าง NPC จุดสนใจ มอนสเตอร์ เหตุการณ์สุ่ม และ boss event ที่ทำงานจาก client-side game state พร้อมการแจ้งเตือนในเกม
+- [x] สร้าง NPC จุดสนใจ มอนสเตอร์ เหตุการณ์สุ่ม และ boss event ที่ทำงานจาก client-side game state พร้อมการแจ้งเตือนในเกม
 - [x] สร้าง biome content bible แบบ data-driven เพื่อกำหนด NPC เหตุการณ์ ศัตรู ทรัพยากร และ mood ที่เหมาะสมให้แต่ละฉาก
 - [ ] สร้าง workflow ปรึกษา Gemini ก่อนพัฒนาระบบสำคัญ โดยรวมคำถามด้านทางเลือก ความเสี่ยง แนวปฏิบัติ และข้อเสนอแนะเพิ่มเติมไว้ในทุกคำขอ
 - [ ] ประเมินและนำข้อเสนอแนะจาก Gemini มาใช้เป็นค่าเริ่มต้นทุกครั้งที่ไม่ขัดกับความปลอดภัย ข้อมูลผู้เล่น หรือข้อจำกัดทางเทคนิคของเกม
@@ -69,10 +69,10 @@
 - [ ] กำหนด template งานต่อแผนที่ที่รวม prompt ขอไอเดียจาก Gemini, biome content, NPC, ศัตรู, ทรัพยากร, เหตุการณ์, boss, การทดสอบ และเกณฑ์ส่งมอบ
 - [ ] commit และ push การเปลี่ยนแปลงไปยัง A_Survival หลังแผนที่หนึ่งเสร็จตามเกณฑ์ พร้อมข้อความ commit ที่ระบุชื่อแผนที่
 - [ ] ให้ Gemini ออกแบบ monster model หลายสายพันธุ์พร้อม silhouette พฤติกรรม จุดอ่อน เอฟเฟกต์ และของดรอปสำหรับแต่ละ biome
-- [ ] สร้าง roster มอนสเตอร์ประจำ biome ระดับ elite และ event/boss เฉพาะ biome เพื่อใช้ใน map module แต่ละแผนที่
+- [x] สร้าง roster มอนสเตอร์ประจำ biome ระดับ elite และ event/boss เฉพาะ biome เพื่อใช้ใน map module แต่ละแผนที่
 - [x] ปรับ art direction เป็น stylized low-resolution fantasy-sci-fi ที่มีกลิ่นอาย pixel แบบร่วมสมัย โดยไม่ใช้ pixel block แบบจ๋า
 - [ ] ให้ Gemini ออกแบบ monster model หลายสายพันธุ์พร้อม silhouette พฤติกรรม จุดอ่อน เอฟเฟกต์ และของดรอปสำหรับแต่ละ biome
-- [ ] สร้าง roster มอนสเตอร์ประจำ biome ระดับ elite และ event/boss เฉพาะ biome เพื่อใช้ใน map module แต่ละแผนที่
+- [x] สร้าง roster มอนสเตอร์ประจำ biome ระดับ elite และ event/boss เฉพาะ biome เพื่อใช้ใน map module แต่ละแผนที่
 - [ ] เขียน relationship tests สำหรับ Player ID–profile–inventory instance–provenance, พืช–ดิน–ผลผลิต, สัตว์เลี้ยง–อุปกรณ์, scene transition–cache และ offline sync
 - [ ] เพิ่ม invariant checks ที่จุดเข้า Lobby เข้าแผนที่ ออกจากแผนที่ และก่อน/หลังซิงก์ เพื่อป้องกันสถานะเกมไม่สอดคล้องกัน
 - [ ] ปรับ Lobby เป็น cinematic character hub ที่มีเมนูแนวตั้งด้านซ้าย แถบทรัพยากร/แจ้งเตือนด้านบน ตัวละครเด่นกลางฉาก ปุ่มโหมดด้านล่าง และ event/ทางลัดด้านข้างในสไตล์ Arcane Frontier
@@ -100,9 +100,9 @@
 - [x] ทำให้สัตว์เลี้ยงมี state ติดตาม/โบนัสเอาชีวิตรอดจริง และแสดงผลใน UI/HUD
 - [x] เพิ่มตัวเลือกเมล็ดหลายชนิดใน Home UI และทำ harvest output ให้ขึ้นกับ seed ที่ปลูก
 - [x] เพิ่มคำสั่งย้ายโครงสร้างโดยตรงบน grid และ flow ประกอบหลายชิ้นแบบ modular ที่ตรวจการชน/ขอบเขตครบถ้วน
-- [ ] ทำให้ MAP_001–MAP_010 มี scene content เฉพาะแผนที่จริง: enemy/resource visuals, encounter props, ambience และ boss presentation ที่สอดคล้องกับ biome ในฉาก
-- [ ] ผูก loading progress กับการเตรียม map/module/cache จริง และแสดง biome transition effects ที่ต่างกันอย่างชัดเจน
-- [ ] เพิ่มการทดสอบและเอกสารยืนยันว่าแต่ละ map prototype เปิดเล่นด้วย content identity ของตน ไม่ใช่เพียง HUD/key art overlay
+- [x] ทำให้ MAP_001–MAP_010 มี scene content เฉพาะแผนที่จริง: enemy/resource visuals, encounter props, ambience และ boss presentation ที่สอดคล้องกับ biome ในฉาก
+- [x] ผูก loading progress กับการเตรียม map/module/cache จริง และแสดง biome transition effects ที่ต่างกันอย่างชัดเจน
+- [x] เพิ่มการทดสอบและเอกสารยืนยันว่าแต่ละ map prototype เปิดเล่นด้วย content identity ของตน ไม่ใช่เพียง HUD/key art overlay
 - [x] ทำ loading variants แยกตามปลายทาง/biome/home/lobby พร้อม motion และ visual treatment เฉพาะ ไม่ใช้ shell เดียวที่ต่างเพียง accent/text
 - [x] ครอบคลุม direct route/query entry ด้วย loading pipeline เดียวกัน หรือบันทึกขอบเขตของ entry ที่ตั้งใจข้าม loading gate ให้ชัดเจน
 - [x] เพิ่มการทดสอบ/เอกสารเส้นทางหลักที่ยืนยันว่ามี loading gate แม้เป็น cached path และใช้ destination-themed presentation
