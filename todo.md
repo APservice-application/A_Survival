@@ -59,8 +59,8 @@
 - [x] สร้าง catalog ข้อมูลแบบ data-driven ที่กำหนด schema, rarity, tag, recipe, effect และ provenance เพื่อรองรับสูงสุด 400 รายการต่อหมวดหลัก
 - [x] วางชุดหมวด catalog สำหรับดาบ ธนู อาวุธระยะไกล พืช/เมล็ด วัตถุดิบ เฟอร์นิเจอร์ ของตกแต่ง และชิ้นส่วนก่อสร้าง
 - [x] เพิ่มระบบจัดสวนและการตกแต่งบ้านที่ใช้ item catalog เดียวกับคลังไอเทม การคราฟต์ และการบันทึกเซฟ
-- [ ] ทำให้ทุกการเปลี่ยนหน้าและเปลี่ยนฉากผ่าน loading transition พร้อม motion และ UI ธีมปลายทาง แม้ฉากนั้นถูก cache แล้ว
-- [ ] แคช game shell และ bundle ของแผนที่ที่เคยดาวน์โหลดใน Chrome เพื่อให้ฉากที่ดาวน์โหลดแล้วเปิดเล่นซ้ำแบบออฟไลน์ได้
+- [x] ทำให้ทุกการเปลี่ยนหน้าและเปลี่ยนฉากผ่าน loading transition พร้อม motion และ UI ธีมปลายทาง แม้ฉากนั้นถูก cache แล้ว
+- [x] แคช game shell และ bundle ของแผนที่ที่เคยดาวน์โหลดใน Chrome เพื่อให้ฉากที่ดาวน์โหลดแล้วเปิดเล่นซ้ำแบบออฟไลน์ได้
 - [ ] สร้าง NPC จุดสนใจ มอนสเตอร์ เหตุการณ์สุ่ม และ boss event ที่ทำงานจาก client-side game state พร้อมการแจ้งเตือนในเกม
 - [x] สร้าง biome content bible แบบ data-driven เพื่อกำหนด NPC เหตุการณ์ ศัตรู ทรัพยากร และ mood ที่เหมาะสมให้แต่ละฉาก
 - [ ] สร้าง workflow ปรึกษา Gemini ก่อนพัฒนาระบบสำคัญ โดยรวมคำถามด้านทางเลือก ความเสี่ยง แนวปฏิบัติ และข้อเสนอแนะเพิ่มเติมไว้ในทุกคำขอ
@@ -88,7 +88,7 @@
 - [x] สร้าง fallback model protocol ที่สลับ Gemini รุ่นทางเลือกอัตโนมัติหลัง cooldown เมื่อรุ่นเดิม error และแจ้งผู้ใช้เฉพาะเมื่อทางเลือกที่รองรับใช้ไม่ได้ทั้งหมด
 - [x] ประเมิน master plan ที่ได้จาก Gemini และบันทึกแนวทางที่นำมาใช้ใน GEMINI_ADOPTED_PLAN.md
 - [ ] ทำ engine migration assessment ตามข้อเสนอ Gemini สำหรับ Phaser 3 + Three.js แบบ 2.5D โดยรักษา Babylon.js prototype ที่เล่นได้ระหว่างเปลี่ยนผ่าน
-- [ ] เพิ่ม IndexedDB transaction store, vector clock และ background sync queue ตามแผน Gemini เพื่อแทน localStorage สำหรับข้อมูลเกมสำคัญ
+- [x] เพิ่ม IndexedDB transaction store, vector clock และ background sync queue ตามแผน Gemini เพื่อแทน localStorage สำหรับข้อมูลเกมสำคัญ
 - [ ] สร้าง MAP_001 Obsidian Outpost ตาม brief Gemini ให้ครบ loading, cache, NPC, resource, monster, surprise encounter และ night boss ก่อน commit ขึ้น GitHub
 - [ ] ใช้ Gemini image brief รูป “สร้างพร้อมสำหรับ… / จุดประสงค์ของภาพ…” แล้วดึงภาพเกมผ่าน Pollinations.ai Image Generation API พร้อม prompt/seed/model metadata ที่สร้างซ้ำได้
 - [ ] แทน player, enemy, resource และฉาก placeholder ที่วาดด้วยทรงเรขาคณิตใน Babylon ด้วย asset image/texture ที่ได้จาก Pollinations และแคชไว้เล่นออฟไลน์
