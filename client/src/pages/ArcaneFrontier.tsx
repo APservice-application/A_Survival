@@ -403,6 +403,16 @@ function ChestSheet({ session, storage, chestId, quarantinedInstanceIds, close, 
   </section></div>;
 }
 
+function ShopSheet({ close, getAssetUrl }: { close: () => void; getAssetUrl: (assetId?: string) => string | undefined }) {
+  const shopItems = ALL_ITEMS.slice(0, 8);
+  return <div className="settings-scrim shop-scrim" onPointerDown={close}><section className="settings-sheet shop-sheet" onPointerDown={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="ร้านค้า"><header><div><p className="eyebrow">Frontier shop · หมุนเวียนรายสัปดาห์</p><h3>ร้านค้า</h3></div><button className="icon-button" onClick={close}><X size={18} /></button></header><div className="shop-grid">{shopItems.map(item => <article key={item.id} className="shop-card"><div className="shop-icon">{getAssetUrl(item.iconAssetId) ? <img src={getAssetUrl(item.iconAssetId)} alt="" /> : <Gem size={20} />}</div><div><b>{item.name}</b><small>{item.category} · {TIER_RULES[item.tier].label}</small><p>{item.effect}</p></div><span className="shop-price"><Gem size={12} /> {item.tier === "legendary" || item.tier === "mythic" ? 250 : item.tier === "epic" ? 120 : item.tier === "rare" ? 60 : 25}</span></article>)}</div><p className="shop-note">ราคาและของหมุนเวียนตาม weekly event · ตัวอย่างใช้ catalog จริงและ provenance เดิม</p></section></div>;
+}
+
+function WardrobeSheet({ session, close, getAssetUrl, onEquip }: { session: LocalGameSession; close: () => void; getAssetUrl: (assetId?: string) => string | undefined; onEquip: (instanceId: string) => void }) {
+  const equippable = session.inventory.filter(i => getItemDefinition(i.definitionId)?.equippable);
+  return <div className="settings-scrim wardrobe-scrim" onPointerDown={close}><section className="settings-sheet wardrobe-sheet" onPointerDown={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="แต่งตัว"><header><div><p className="eyebrow">Wardrobe · แต่งสไตล์จากคลังจริง</p><h3>แต่งตัว</h3></div><button className="icon-button" onClick={close}><X size={18} /></button></header><div className="wardrobe-grid">{equippable.length === 0 ? <p>ยังไม่มีไอเทมที่สวมใส่ได้ในคลัง</p> : equippable.map(inst => { const def = getItemDefinition(inst.definitionId)!; const equipped = Object.values(session.vaultEquipment ?? {}).includes(inst.instanceId); return <article key={inst.instanceId} className={`wardrobe-card ${equipped ? "equipped" : ""}`}><div className="wardrobe-icon">{getAssetUrl(def.iconAssetId) ? <img src={getAssetUrl(def.iconAssetId)} alt="" /> : <Sparkles size={20} />}</div><div><b>{def.name}</b><small>{def.category} · +{inst.enhancement}</small><p>{def.effect}</p></div><button onClick={() => onEquip(inst.instanceId)}>{equipped ? "ถอด" : "ใส่"}</button></article>; })}</div><p className="wardrobe-note">สีผม ชุด และช่องอุปกรณ์อ่านจากคลังจริง · เปลี่ยนแล้วบันทึกเป็น session และซิงก์</p></section></div>;
+}
+
 export default function ArcaneFrontier() {
   const directEntryRef = useRef<Screen>(getInitialScreen());
   const directMapRef = useRef(getInitialMapId());
@@ -422,6 +432,8 @@ export default function ArcaneFrontier() {
   const [showVault, setShowVault] = useState(getVaultDemoEnabled);
   const [openWorldStorageId, setOpenWorldStorageId] = useState<string | null>(null);
   const [showChest, setShowChest] = useState(false);
+  const [showShop, setShowShop] = useState(false);
+  const [showWardrobe, setShowWardrobe] = useState(false);
   const [activeChestId, setActiveChestId] = useState(STORAGE_CHEST_ID);
   const [showTacticalMap, setShowTacticalMap] = useState(false);
   const [showAiNpc, setShowAiNpc] = useState(false);
@@ -446,6 +458,8 @@ export default function ArcaneFrontier() {
   const [toast, setToast] = useState<string | null>(null);
   const [selectedHomeSeedId, setSelectedHomeSeedId] = useState<string | null>(null);
   const [selectedHomeObjectId, setSelectedHomeObjectId] = useState<string | null>(null);
+  const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<any>(null);
+  const [isInstallable, setIsInstallable] = useState(false);
   const openProfileMutation = trpc.game.openProfile.useMutation();
   const syncMutation = trpc.game.sync.useMutation();
   const syncBatchMutation = trpc.game.syncBatch.useMutation();
@@ -469,6 +483,24 @@ export default function ArcaneFrontier() {
   }, []);
 
   useEffect(() => saveSettings(settings), [settings]);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredInstallPrompt(e);
+      setIsInstallable(true);
+    };
+    const handleAppInstalled = () => {
+      setIsInstallable(false);
+      setDeferredInstallPrompt(null);
+    };
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("appinstalled", handleAppInstalled);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener("appinstalled", handleAppInstalled);
+    };
+  }, []);
 
   useEffect(() => {
     if (screen !== "game" || !session) {
@@ -992,6 +1024,8 @@ export default function ArcaneFrontier() {
     {detailInstance && <ItemDetailSheet instance={detailInstance} close={() => setDetailInstanceId(null)} getAssetUrl={getPackIconUrl} />}
     {showIntegrity && integrityReport && <IntegritySheet report={integrityReport} syncAttention={syncAttention} close={() => setShowIntegrity(false)} />}
     {showChest && session && screen === "game" && <ChestSheet session={session} storage={worldStorageById} chestId={activeChestId} quarantinedInstanceIds={quarantinedInstanceIds} close={() => setShowChest(false)} onDeposit={depositFromChest} onWithdraw={withdrawFromChest} getAssetUrl={getPackIconUrl} />}
+    {showShop && <ShopSheet close={() => setShowShop(false)} getAssetUrl={getPackIconUrl} />}
+    {showWardrobe && session && <WardrobeSheet session={session} close={() => setShowWardrobe(false)} getAssetUrl={getPackIconUrl} onEquip={equipVaultInstance} />}
     {showVault && session && <VaultSheet session={session} quarantinedInstanceIds={quarantinedInstanceIds} close={() => setShowVault(false)} onEquip={equipVaultInstance} onSyncRequest={requestVaultSync} onLongPress={instanceId => setDetailInstanceId(instanceId)} toast={message => setToast(message)} getAssetUrl={getPackIconUrl} />}
     {openWorldStorage && session && screen === "game" && <WorldStorageSheet storage={openWorldStorage} session={session} quarantinedInstanceIds={quarantinedInstanceIds} close={() => setOpenWorldStorageId(null)} onStorageChange={persistWorldStorageMutation} onInventoryChange={inventory => { updateSession({ inventory }); }} toast={message => setToast(message)} />}
     {showTacticalMap && screen === "game" && <TacticalMapSheet map={activeMap} snapshot={gameSnapshot} close={() => setShowTacticalMap(false)} />}
@@ -1002,7 +1036,7 @@ export default function ArcaneFrontier() {
     {screen === "landing" && <section className="landing-screen">
       <div className="landing-void" /><div className="landing-runes rune-a" /><div className="landing-runes rune-b" />
       <nav className="landing-nav"><div className="brand-lockup"><ArcaneMark /><span>ARCANE<br />FRONTIER</span></div><div className="landing-nav-actions"><button className="quiet-control" onClick={() => setShowCodex(true)}><BookOpen size={16} /> คู่มือ</button><button className="quiet-control" onClick={() => setShowCredits(true)}><Shield size={16} /> เครดิต</button><button className="quiet-control" onClick={() => { setSettingsScope("global"); setShowSettings(true); }}><Volume2 size={16} /> ตั้งค่า</button></div></nav>
-      <div className="landing-copy"><p className="eyebrow">เกมเอาชีวิตรอดที่เล่นออฟไลน์ได้ · เนื้อหาสำหรับผู้เล่นโตขึ้น</p><h1>เอาตัวรอดจาก<br /><em>สิ่งที่เป็นไปไม่ได้</em></h1><p className="landing-description">โลกเวทมนตร์แตกสลายกำลังเชื่อมต่อกับเทคโนโลยีต่างดาว สร้างบ้าน ฝึกสัตว์เลี้ยง และออกสำรวจขอบจักรวาลตามจังหวะของคุณเอง</p><button className="primary-cta" onClick={startIdentity}><Play size={18} fill="currentColor" /> เข้าสู่พื้นที่รอยต่อ</button><p className="landing-note">มือถือแนวนอน · พร้อมใช้แคช · ไม่ต้องมีรหัสผ่าน</p></div>
+      <div className="landing-copy"><p className="eyebrow">เกมเอาชีวิตรอดที่เล่นออฟไลน์ได้ · เนื้อหาสำหรับผู้เล่นโตขึ้น</p><h1>เอาตัวรอดจาก<br /><em>สิ่งที่เป็นไปไม่ได้</em></h1><p className="landing-description">โลกเวทมนตร์แตกสลายกำลังเชื่อมต่อกับเทคโนโลยีต่างดาว สร้างบ้าน ฝึกสัตว์เลี้ยง และออกสำรวจขอบจักรวาลตามจังหวะของคุณเอง</p><div className="landing-actions"><button className="primary-cta" onClick={startIdentity}><Play size={18} fill="currentColor" /> เข้าสู่พื้นที่รอยต่อ</button>{isInstallable && deferredInstallPrompt ? <button className="secondary-cta" onClick={async () => { deferredInstallPrompt.prompt(); const { outcome } = await deferredInstallPrompt.userChoice; if (outcome === "accepted") setIsInstallable(false); setDeferredInstallPrompt(null); }}><Download size={16} /> ติดตั้งเป็นแอป</button> : <button className="secondary-cta" onClick={() => setToast("กดแชร์ → เพิ่มไปยังหน้าจอหลัก บนมือถือเพื่อเล่นออฟไลน์")}><Download size={16} /> เพิ่มไปยังหน้าจอหลัก</button>}</div><p className="landing-note">มือถือแนวนอน · พร้อมใช้แคช · ไม่ต้องมีรหัสผ่าน · PWA ติดตั้งได้</p></div>
       <div className="landing-scene"><img className="landing-key-art" src={obsidianKeyArt ?? "/manus-storage/map001-obsidian-outpost_09f41a7e.jpg"} alt="Obsidian Outpost" onError={(event) => { event.currentTarget.style.display = "none"; event.currentTarget.parentElement?.classList.add("asset-fallback"); }} /><img className="hero-survivor-art" src={obsidianSurvivorArt ?? "/manus-storage/survivor-hero_d9227206.jpg"} alt="Arcane Frontier survivor" onError={(event) => { event.currentTarget.style.display = "none"; event.currentTarget.parentElement?.classList.add("asset-fallback-character"); }} /></div>
       <div className="landing-bottom"><span>01 — OBSIDIAN FRONTIER</span><span>Build {GAME_VERSION}</span></div>
     </section>}
@@ -1016,7 +1050,7 @@ export default function ArcaneFrontier() {
     {screen === "lobby" && session && <section className="lobby-screen">
       <header className="lobby-header"><div className="brand-lockup compact"><ArcaneMark /><span>ARCANE FRONTIER</span></div><div className="lobby-header-right"><span className="currency"><Gem size={15} /> {session.currency.toLocaleString()}</span><button className="icon-button" onClick={() => openHelp("identity")} aria-label="เปิดคู่มือ"><CircleHelp size={18} /></button><button className="icon-button" onClick={() => { setSettingsScope("global"); setShowSettings(true); }} aria-label="เปิด Outside/Global Settings"><Settings2 size={18} /></button><button className="player-chip"><span className="player-avatar">{session.playerId.slice(0, 1).toUpperCase()}</span>{session.playerId}</button></div></header>
       <div className="lobby-grid">
-        <aside className="lobby-rail left-rail"><button onClick={() => transitionTo("home", { title: "Aether Homestead", accent: "#7ee787" })}><Home size={18} /><span>บ้าน</span></button><button onClick={() => setShowVault(true)}><Backpack size={18} /><span>คลัง</span></button><button onClick={() => setShowCodex(true)}><BookOpen size={18} /><span>คู่มือ</span></button><button onClick={() => setToast("Cosmetic studio is ready for catalog items") }><Sparkles size={18} /><span>แต่งสไตล์</span></button><button onClick={() => setToast("Shop rotations will use weekly event data") }><Gem size={18} /><span>ร้านค้า</span></button></aside>
+        <aside className="lobby-rail left-rail"><button onClick={() => transitionTo("home", { title: "Aether Homestead", accent: "#7ee787" })}><Home size={18} /><span>บ้าน</span></button><button onClick={() => setShowVault(true)}><Backpack size={18} /><span>คลัง</span></button><button onClick={() => setShowCodex(true)}><BookOpen size={18} /><span>คู่มือ</span></button><button onClick={() => setShowWardrobe(true)}><Sparkles size={18} /><span>แต่งสไตล์</span></button><button onClick={() => setShowShop(true)}><Gem size={18} /><span>ร้านค้า</span></button></aside>
         <section className="lobby-character"><div className="lobby-haze" /><div className="character-pedestal"><div className="character-runes"><i /><i /><i /></div><img className="lobby-survivor-art" src={obsidianSurvivorArt ?? "/manus-storage/survivor-hero_d9227206.jpg"} alt="Survivor loadout" onError={(event) => { event.currentTarget.style.display = "none"; event.currentTarget.parentElement?.classList.add("asset-fallback-character"); }} /></div><div className="loadout-caption"><span className="tier-dot" style={{ background: TIER_RULES[primaryWeapon?.tier ?? "common"].color }} /><div><b>{primaryWeapon?.name ?? "Aether Blade"}</b><small>+{session.inventory[0]?.enhancement ?? 0} · {TIER_RULES[primaryWeapon?.tier ?? "common"].label}</small></div></div></section>
         <aside className="lobby-rail right-rail"><section className="weekly-card" style={{ "--event-accent": event.accent } as React.CSSProperties}><div><p className="eyebrow">กิจกรรมประจำสัปดาห์</p><h3>{event.title}</h3><p>{event.subtitle}</p></div><div className="weekly-footer"><span><TimerReset size={14} /> 5d 14h</span><button onClick={() => setToast(event.objective)}><BellRing size={15} /></button></div></section><section className="status-card"><p className="eyebrow">ตรวจสอบคลังไอเทม</p><button className={`status-line integrity-status ${hasIntegrityAttention ? "attention" : ""}`} onClick={() => setShowIntegrity(true)}><Shield size={16} /><span>ตรวจ item instance</span><b>{hasIntegrityAttention ? "ต้องตรวจ" : "ปกติ"}</b></button><div className="status-line"><PawPrint size={16} /><span>{session.home.petName}</span><b>LV. 01</b></div></section></aside>
       </div>
