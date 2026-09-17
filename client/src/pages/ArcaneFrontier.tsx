@@ -56,7 +56,8 @@ import type { WorldPlantState } from "@/game/systems/worldFarmingSystem";
 import { HELP_ARTICLES, getHelpArticle, type HelpTopic } from "@/game/help/helpContent";
 import { inspectInventoryIntegrity, integrityStatusCopy, type IntegrityReport } from "@/game/integrity/integrityVerdict";
 import { getVaultActionState, toggleVaultEquipment, type VaultAction } from "@/game/integrity/vaultActions";
-import { RUNTIME_MAP_ID, isRuntimeMapAllowed, resolveDirectMapId, resolveDirectRoute, type DirectRouteScreen } from "@/game/routing/directRoute";
+import { RUNTIME_MAP_ID, RUNTIME_MAP_IDS, isRuntimeMapAllowed, resolveDirectMapId, resolveDirectRoute, type DirectRouteScreen } from "@/game/routing/directRoute";
+import { PLAYABLE_MAP_IDS } from "@/game/routing/playableMaps";
 import { dispatchHotbarAction, getHotbarInstance, type HotbarSlot } from "@/game/systems/itemActionSystem";
 import { addItemToContainer, PLAYER_INVENTORY_SLOTS, removeItemFromContainer, type WorldStorage } from "@/game/systems/inventorySystem";
 import { consumeOneFromStack, type WorldBlockOverrides } from "@/game/systems/blockActionSystem";
@@ -91,7 +92,7 @@ function getInitialScreen(): Screen {
 
 function getInitialMapId() {
   if (typeof window === "undefined") return RUNTIME_MAP_ID;
-  return resolveDirectMapId(window.location.search, [RUNTIME_MAP_ID]);
+  return resolveDirectMapId(window.location.search, [...PLAYABLE_MAP_IDS]);
 }
 
 function getIntegrityDemoEnabled() {
@@ -460,7 +461,7 @@ export default function ArcaneFrontier() {
       setSession(saved ?? demoSession);
       setSettings(getSettings());
       if (requested !== "landing" && requested !== "identity") {
-        const map = requested === "game" && directMapRef.current === RUNTIME_MAP_ID ? MAP_REGISTRY.find(candidate => candidate.id === RUNTIME_MAP_ID) : undefined;
+        const map = requested === "game" && isRuntimeMapAllowed(directMapRef.current) ? MAP_REGISTRY.find(candidate => candidate.id === directMapRef.current) : undefined;
         transitionTo(requested, { mapId: map?.id, title: map?.name ?? (requested === "home" ? "Aether Homestead" : "Frontier Lobby"), accent: map?.accent ?? (requested === "home" ? "#7ee787" : "#9d4edd") });
       }
     });
@@ -476,7 +477,8 @@ export default function ArcaneFrontier() {
     }
     let active = true;
     setWorldBlockStateReady(false);
-    void loadOfflineMapState(RUNTIME_MAP_ID, session.playerId).then(state => {
+    const effectiveMapId = isRuntimeMapAllowed(selectedMapId) ? selectedMapId : RUNTIME_MAP_ID;
+    void loadOfflineMapState(effectiveMapId, session.playerId).then(state => {
       if (!active) return;
       setWorldBlockOverrides(state.worldBlockOverrides);
       setWorldFarmState(state.worldFarmState);
@@ -558,7 +560,7 @@ export default function ArcaneFrontier() {
   useEffect(() => {
     if (screen !== "maps") return;
     let active = true;
-    void getCachedMapIds([RUNTIME_MAP_ID]).then(ids => {
+    void getCachedMapIds([...PLAYABLE_MAP_IDS]).then(ids => {
       if (active) setCachedMapIds(new Set(ids));
     });
     return () => { active = false; };
@@ -651,16 +653,16 @@ export default function ArcaneFrontier() {
     const blockedMapRequest = Boolean(requestedMapId && !isRuntimeMapAllowed(requestedMapId));
     const allowedMapId = blockedMapRequest ? undefined : requestedMapId;
     const map = allowedMapId ? MAP_REGISTRY.find(candidate => candidate.id === allowedMapId && isRuntimeMapAllowed(candidate.id)) : undefined;
-    const title = blockedMapRequest ? "Obsidian Frontier เท่านั้น" : options?.title ?? map?.name ?? (destination === "home" ? "Aether Homestead" : "Frontier Lobby");
-    const accent = blockedMapRequest ? "#00f3ff" : options?.accent ?? map?.accent ?? "#00f3ff";
+    const title = blockedMapRequest ? "แผนที่นี้ยังไม่เปิด" : options?.title ?? map?.name ?? (destination === "home" ? "Aether Homestead" : "Frontier Lobby");
+    const accent = blockedMapRequest ? "#ff4d6d" : options?.accent ?? map?.accent ?? "#00f3ff";
     setTransition({ destination: blockedMapRequest ? "maps" : destination, mapId: allowedMapId, title, accent, progress: 0, phase: "กำลังปรับเส้นทางพลังงาน" });
     const delay = (milliseconds: number) => new Promise(resolve => window.setTimeout(resolve, milliseconds));
     void (async () => {
       let resolvedDestination = blockedMapRequest ? "maps" : destination;
       let resolvedMapId = allowedMapId;
       if (blockedMapRequest) {
-        setToast("ตอนนี้เปิดให้เล่นเฉพาะ Obsidian Frontier · แผนที่อื่นยังไม่เปิด");
-        setTransition(current => current ? { ...current, destination: "maps", mapId: undefined, title: "Obsidian Frontier เท่านั้น", accent: "#00f3ff", progress: 82, phase: "แผนที่อื่นยังปิดไว้" } : current);
+        setToast("แผนที่นี้ยังไม่เปิดในชุด 10 แผนที่ · เลือกแผนที่ที่เล่นได้");
+        setTransition(current => current ? { ...current, destination: "maps", mapId: undefined, title: "แผนที่นี้ยังไม่เปิด", accent: "#ff4d6d", progress: 82, phase: "แผนที่ยังปิดไว้" } : current);
         await delay(90);
       } else if (map) {
         try {
@@ -732,7 +734,7 @@ export default function ArcaneFrontier() {
   };
 
   const blockActionHandler = useCallback((event: Pick<BlockActionEvent, "type" | "mapId" | "overrides" | "itemInstanceId" | "itemDefinitionId" | "message" | "coordinate" | "moduleId">) => {
-    if (!session || event.mapId !== RUNTIME_MAP_ID) return false;
+    if (!session || !isRuntimeMapAllowed(event.mapId)) return false;
     if (event.type === "place" && event.itemInstanceId) {
       const consumed = consumeOneFromStack(session.inventory, event.itemInstanceId);
       if (!consumed.accepted) {
@@ -744,7 +746,7 @@ export default function ArcaneFrontier() {
       updateSession({ pendingActions: session.pendingActions.concat({ id: `block-break-${Date.now()}`, type: "block-break", createdAt: Date.now(), payload: { mapId: event.mapId, moduleId: event.moduleId, coordinate: event.coordinate }, }) });
     }
     setWorldBlockOverrides(event.overrides);
-    void saveOfflineMapState({ mapId: RUNTIME_MAP_ID, playerId: session.playerId, fogOfWar: "", harvestedNodes: {}, worldBlockOverrides: event.overrides, worldFarmState, worldStorageById, inMapSettings, worldPlants: mapState?.worldPlants ?? {}, cameraMode: inMapSettings.cameraMode, updatedAt: Date.now() }).catch(() => setToast("บันทึกบล็อกในเครื่องไม่สำเร็จ · การเล่นยังดำเนินต่อได้"));
+    void saveOfflineMapState({ mapId: event.mapId, playerId: session.playerId, fogOfWar: "", harvestedNodes: {}, worldBlockOverrides: event.overrides, worldFarmState, worldStorageById, inMapSettings, worldPlants: mapState?.worldPlants ?? {}, cameraMode: inMapSettings.cameraMode, updatedAt: Date.now() }).catch(() => setToast("บันทึกบล็อกในเครื่องไม่สำเร็จ · การเล่นยังดำเนินต่อได้"));
     setToast(event.message);
     return true;
   }, [inMapSettings, session, worldFarmState, worldStorageById]);
@@ -753,7 +755,7 @@ export default function ArcaneFrontier() {
   const farmMessageHandler = useCallback((message: string) => setToast(message), []);
 
   const farmActionHandler = useCallback((event: FarmActionEvent) => {
-    if (!session || event.mapId !== RUNTIME_MAP_ID) return false;
+    if (!session || !isRuntimeMapAllowed(event.mapId)) return false;
     if (event.type === "plant" && event.seedInstanceId) {
       const consumed = consumeOneFromStack(session.inventory, event.seedInstanceId);
       if (!consumed.accepted) {
@@ -770,7 +772,7 @@ export default function ArcaneFrontier() {
       if (event.effect?.kind === "repel") setToast(`${event.message} · แรงผลักทำงาน ${event.effect.radius} บล็อกแบบไม่ทำลาย`);
     }
     setWorldFarmState(event.state);
-    void saveOfflineMapState({ mapId: RUNTIME_MAP_ID, playerId: session.playerId, fogOfWar: "", harvestedNodes: {}, worldBlockOverrides, worldFarmState: event.state, worldStorageById, inMapSettings, worldPlants: mapState?.worldPlants ?? {}, cameraMode: inMapSettings.cameraMode, updatedAt: Date.now() }).catch(() => setToast("บันทึกแปลงโลกในเครื่องไม่สำเร็จ · การเล่นยังดำเนินต่อได้"));
+    void saveOfflineMapState({ mapId: event.mapId, playerId: session.playerId, fogOfWar: "", harvestedNodes: {}, worldBlockOverrides, worldFarmState: event.state, worldStorageById, inMapSettings, worldPlants: mapState?.worldPlants ?? {}, cameraMode: inMapSettings.cameraMode, updatedAt: Date.now() }).catch(() => setToast("บันทึกแปลงโลกในเครื่องไม่สำเร็จ · การเล่นยังดำเนินต่อได้"));
     if (!event.effect || event.effect.kind !== "repel") setToast(event.message);
     return true;
   }, [inMapSettings, session, worldBlockOverrides, worldStorageById]);
@@ -784,13 +786,15 @@ export default function ArcaneFrontier() {
   const persistStorageTransfer = useCallback((result: ReturnType<typeof depositIntoChest> | ReturnType<typeof withdrawItemFromChest>) => {
     if (!session || !result.ok) return;
     setWorldStorageById(result.storage);
-    void saveOfflineMapState({ mapId: RUNTIME_MAP_ID, playerId: session.playerId, fogOfWar: "", harvestedNodes: {}, worldBlockOverrides, worldFarmState, worldStorageById: result.storage, inMapSettings, worldPlants: mapState?.worldPlants ?? {}, cameraMode: inMapSettings.cameraMode, updatedAt: Date.now() }).catch(() => setToast("บันทึกของในหีบไม่สำเร็จ · การเล่นยังดำเนินต่อได้"));
+    const persistMapId = isRuntimeMapAllowed(selectedMapId) ? selectedMapId : RUNTIME_MAP_ID;
+    void saveOfflineMapState({ mapId: persistMapId, playerId: session.playerId, fogOfWar: "", harvestedNodes: {}, worldBlockOverrides, worldFarmState, worldStorageById: result.storage, inMapSettings, worldPlants: mapState?.worldPlants ?? {}, cameraMode: inMapSettings.cameraMode, updatedAt: Date.now() }).catch(() => setToast("บันทึกของในหีบไม่สำเร็จ · การเล่นยังดำเนินต่อได้"));
     updateSession({ inventory: result.carry, pendingActions: session.pendingActions.concat(result.action) });
   }, [inMapSettings, session, worldBlockOverrides, worldFarmState]);
 
   const depositFromChest = useCallback((itemInstanceId: string) => {
     if (!session) return;
-    const result = depositIntoChest({ mapId: RUNTIME_MAP_ID, chestId: activeChestId, carry: session.inventory, storage: worldStorageById, itemInstanceId, now: Date.now() });
+    const depositMapId = isRuntimeMapAllowed(selectedMapId) ? selectedMapId : RUNTIME_MAP_ID;
+    const result = depositIntoChest({ mapId: depositMapId, chestId: activeChestId, carry: session.inventory, storage: worldStorageById, itemInstanceId, now: Date.now() });
     if (!result.ok) return setToast(result.reason);
     persistStorageTransfer(result);
     setToast("เก็บของเข้าหีบแล้ว · item instance และ provenance เดิมยังอยู่");
@@ -798,7 +802,8 @@ export default function ArcaneFrontier() {
 
   const withdrawFromChest = useCallback((itemInstanceId: string) => {
     if (!session) return;
-    const result = withdrawItemFromChest({ mapId: RUNTIME_MAP_ID, chestId: activeChestId, carry: session.inventory, storage: worldStorageById, itemInstanceId, now: Date.now() });
+    const withdrawMapId = isRuntimeMapAllowed(selectedMapId) ? selectedMapId : RUNTIME_MAP_ID;
+    const result = withdrawItemFromChest({ mapId: withdrawMapId, chestId: activeChestId, carry: session.inventory, storage: worldStorageById, itemInstanceId, now: Date.now() });
     if (!result.ok) return setToast(result.reason);
     persistStorageTransfer(result);
     setToast("นำของออกจากหีบแล้ว · provenance เดิมยังอยู่");
@@ -808,7 +813,8 @@ export default function ArcaneFrontier() {
     const normalized = normalizeInMapSettings(next);
     setInMapSettings(normalized);
     if (!session) return;
-    void saveOfflineMapState({ mapId: RUNTIME_MAP_ID, playerId: session.playerId, fogOfWar: "", harvestedNodes: {}, worldBlockOverrides, worldFarmState, worldStorageById, inMapSettings: normalized, worldPlants: mapState?.worldPlants ?? {}, cameraMode: normalized.cameraMode, updatedAt: Date.now() }).catch(() => setToast("บันทึกตั้งค่าในแผนที่ไม่สำเร็จ · การเล่นยังดำเนินต่อได้"));
+    const commitMapId = isRuntimeMapAllowed(selectedMapId) ? selectedMapId : RUNTIME_MAP_ID;
+    void saveOfflineMapState({ mapId: commitMapId, playerId: session.playerId, fogOfWar: "", harvestedNodes: {}, worldBlockOverrides, worldFarmState, worldStorageById, inMapSettings: normalized, worldPlants: mapState?.worldPlants ?? {}, cameraMode: normalized.cameraMode, updatedAt: Date.now() }).catch(() => setToast("บันทึกตั้งค่าในแผนที่ไม่สำเร็จ · การเล่นยังดำเนินต่อได้"));
   }, [session, worldBlockOverrides, worldFarmState, worldStorageById]);
 
   const snapshotHandler = useCallback((next: GameSnapshot) => {
@@ -1021,9 +1027,9 @@ export default function ArcaneFrontier() {
       <header className="screen-header"><button className="back-control" onClick={() => transitionTo("lobby", { title: "โถง Frontier", accent: "#9d00ff" })}><ChevronLeft size={18} /> กลับโถง</button><div><p className="eyebrow">หอสังเกตการณ์แผนที่</p><h2>เลือกพื้นที่ออกสำรวจ</h2></div><button className="map-count help-trigger" onClick={() => openHelp("offline")}><CircleHelp size={16} /> แคชและออฟไลน์</button></header>
       <div className="map-cards">{MAP_REGISTRY.filter(map => isRuntimeMapAllowed(map.id)).map((map, index) => {
         const cached = cachedMapIds.has(map.id);
-        return <article key={map.id} className={`map-card ${map.id === selectedMapId ? "selected" : ""}`} style={{ "--map-accent": map.accent } as React.CSSProperties}><div className="map-card-art">{obsidianKeyArt ? <img src={obsidianKeyArt} alt="" onError={(event) => { event.currentTarget.style.display = "none"; event.currentTarget.parentElement?.classList.add("asset-fallback"); }} /> : <span className={`map-art map-art-${index % 4}`} />}<div className="map-number">01</div></div><div className="map-card-body"><div><p>{map.biome}</p><h3>{map.name}</h3><small className="map-prototype-status">OBSIDIAN VERTICAL SLICE · เล่นได้ตอนนี้</small></div><div className="map-meta"><span>รัศมี {map.radiusMeters}m</span><span>ภัยคุกคาม {"◆".repeat(map.threat)}</span></div><button onClick={() => transitionTo("game", { mapId: map.id, title: map.name, accent: map.accent })}>{cached ? <><Play size={15} fill="currentColor" /> เข้าเล่นจากแคช</> : <><Download size={15} /> เตรียมพื้นที่</>}</button></div></article>;
+        return <article key={map.id} className={`map-card ${map.id === selectedMapId ? "selected" : ""}`} style={{ "--map-accent": map.accent } as React.CSSProperties}><div className="map-card-art">{obsidianKeyArt ? <img src={obsidianKeyArt} alt="" onError={(event) => { event.currentTarget.style.display = "none"; event.currentTarget.parentElement?.classList.add("asset-fallback"); }} /> : <span className={`map-art map-art-${index % 4}`} />}<div className="map-number">{String(index + 1).padStart(2, "0")}</div></div><div className="map-card-body"><div><p>{map.biome}</p><h3>{map.name}</h3><small className="map-prototype-status">{map.id === "obsidian-frontier" ? "OBSIDIAN VERTICAL SLICE · เล่นได้" : `MAP ${String(index + 1).padStart(2, "0")} · เล่นได้ · T${map.threat}`}</small></div><div className="map-meta"><span>รัศมี {map.radiusMeters}m</span><span>ภัยคุกคาม {"◆".repeat(map.threat)}</span></div><button onClick={() => transitionTo("game", { mapId: map.id, title: map.name, accent: map.accent })}>{cached ? <><Play size={15} fill="currentColor" /> เข้าเล่นจากแคช</> : <><Download size={15} /> เตรียมพื้นที่</>}</button></div></article>;
       })}</div>
-      <p className="map-footnote">ตอนนี้เปิดให้เล่นเฉพาะ Obsidian Frontier vertical slice เท่านั้น ส่วนแผนที่อื่นยังเป็นข้อมูลแผนงานหลังบ้านและยังไม่เปิดให้เลือกหรือเตรียม cache ใน runtime</p>
+      <p className="map-footnote">ชุด 10 แผนที่แรกเปิดให้เล่นแล้ว · แผนที่ 11–100 ยังเป็นข้อมูลแผนงานและยังไม่เปิด cache ใน runtime</p>
     </section>}
 
     {screen === "home" && session && <section className="home-screen">

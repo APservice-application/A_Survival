@@ -84,7 +84,7 @@ describe("map cache preparation", () => {
 
   it("denies future map cache preparation and lookup before any cache or network work", async () => {
     installCacheHarness();
-    const futureMap = MAP_REGISTRY[1]!;
+    const futureMap = MAP_REGISTRY.find(map => map.status === "planned") ?? MAP_REGISTRY[15]!;
     const phases: string[] = [];
     const result = await prepareMapModule(futureMap, update => phases.push(update.phase));
     expect(result).toMatchObject({ cached: false, offline: false, ready: false });
