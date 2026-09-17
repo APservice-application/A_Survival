@@ -1,4 +1,4 @@
-export const GAME_VERSION = "100.1.1.1";
+export const GAME_VERSION = "100.10.0.0";
 
 export const VERSION_POLICY = {
   major: "อัปเดตเนื้อหาหลักหรือการเปลี่ยนแปลงระดับใหญ่",

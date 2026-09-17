@@ -114,8 +114,8 @@ describe("Phase7 relationship — offline sync ↔ vector clock", () => {
 });
 
 describe("Phase7 invariant checks — Lobby / Map entry / Sync", () => {
-  it("lobby entry invariant: version 100.1.1.1, tier budgets, and provenance gate are coherent", () => {
-    expect(GAME_VERSION).toBe("100.1.1.1");
+  it("lobby entry invariant: version 100.10.0.0, tier budgets, and provenance gate are coherent", () => {
+    expect(GAME_VERSION).toBe("100.10.0.0");
     expect(GAME_VERSION.split(".")).toHaveLength(4);
     for (const tier of ["low", "balanced", "high"] as const) {
       const budget = getPerformanceBudget(tier, 25, 60);
