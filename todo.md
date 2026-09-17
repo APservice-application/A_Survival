@@ -39,14 +39,14 @@
 - [x] สร้างเมนูตั้งค่าในเกมสำหรับ quality preset, particle/effect intensity, shadow/detail, music volume, SFX volume, reduced motion และ touch control preferences
 - [x] สร้างตัวควบคุมการเรียก Gemini API ที่รวมคำขอที่เกี่ยวข้อง เว้นช่วง 6–10 วินาที และไม่เกิน 15 คำขอต่อนาที
 - [x] ตรวจสอบ repository A_Survival, แทนที่ไฟล์เกมเดิมด้วยต้นแบบเกมใหม่ และ push commit ที่มีรายละเอียดการเปลี่ยนแปลงชัดเจน
-- [ ] ใช้ Gemini API เป็นแหล่งกำหนดและสร้างองค์ประกอบที่ผู้เล่นมองเห็นทั้งหมด รวมถึงโลก ตัวละคร เอฟเฟกต์ UI ไอคอน หน้าจอโหลด และภาพนำเสนอเกม
+- [x] ใช้ Gemini API เป็นแหล่งกำหนดและสร้างองค์ประกอบที่ผู้เล่นมองเห็นทั้งหมด รวมถึงโลก ตัวละคร เอฟเฟกต์ UI ไอคอน หน้าจอโหลด และภาพนำเสนอเกม
 - [x] ออกแบบ building system แบบ modular ที่รองรับการวาง ประกอบ หมุน เก็บ และย้ายชิ้นส่วนสิ่งปลูกสร้างได้
 - [x] สร้าง catalog ข้อมูลแบบ data-driven ที่กำหนด schema, rarity, tag, recipe, effect และ provenance เพื่อรองรับสูงสุด 400 รายการต่อหมวดหลัก
 - [x] วางชุดหมวด catalog สำหรับดาบ ธนู อาวุธระยะไกล พืช/เมล็ด วัตถุดิบ เฟอร์นิเจอร์ ของตกแต่ง และชิ้นส่วนก่อสร้าง
 - [x] เพิ่มระบบจัดสวนและการตกแต่งบ้านที่ใช้ item catalog เดียวกับคลังไอเทม การคราฟต์ และการบันทึกเซฟ
 - [x] สร้างระบบดินแบบจัดกลุ่มให้น้อยและอ่านง่าย โดยผูกพืชแต่ละชนิดกับดิน/สภาพแวดล้อมที่เหมาะสมและแสดง feedback ก่อนปลูก
 - [x] เพิ่ม onboarding, contextual tooltip, หน้าคู่มือ และคำอธิบายฟังก์ชันครบถ้วนสำหรับการเคลื่อนที่ ต่อสู้ สร้าง ปลูก ดูแลสัตว์เลี้ยง สำรวจ เซฟ ซิงก์ และการตั้งค่า
-- [ ] เพิ่มคำสั่งปิดท้ายในทุก Gemini API request ให้ส่งข้อเสนอแนะหรือข้อคิดเห็นที่ใช้พัฒนางานได้กลับมาด้วย
+- [x] เพิ่มคำสั่งปิดท้ายในทุก Gemini API request ให้ส่งข้อเสนอแนะหรือข้อคิดเห็นที่ใช้พัฒนางานได้กลับมาด้วย
 - [x] กำหนด tier ของไอเทม อัตราดรอปแบบควบคุมได้ และระบบตีบวกที่มีต้นทุน ความเสี่ยง และเพดานตาม rarity
 - [x] เพิ่มกติกา item instance สำหรับอาวุธ/อุปกรณ์ที่ซ้อนจำนวนในช่องเดียวได้สูงสุดหนึ่งชิ้น แต่ผู้เล่นครอบครองหลาย instance ได้ พร้อมตรวจเมื่อเข้าเกม เข้าแผนที่ และซิงก์ข้อมูล
 - [x] สร้างหน้าจอแจ้งเตือนและบันทึกเหตุการณ์เมื่อพบ instance ซ้อนผิดกติกา จำนวนเปลี่ยนโดยไม่มี provenance หรือข้อมูล inventory ผิดรูปแบบ พร้อมระงับเฉพาะรายการที่ผิดกติกา
@@ -63,15 +63,15 @@
 - [x] แคช game shell และ bundle ของแผนที่ที่เคยดาวน์โหลดใน Chrome เพื่อให้ฉากที่ดาวน์โหลดแล้วเปิดเล่นซ้ำแบบออฟไลน์ได้
 - [x] สร้าง NPC จุดสนใจ มอนสเตอร์ เหตุการณ์สุ่ม และ boss event ที่ทำงานจาก client-side game state พร้อมการแจ้งเตือนในเกม
 - [x] สร้าง biome content bible แบบ data-driven เพื่อกำหนด NPC เหตุการณ์ ศัตรู ทรัพยากร และ mood ที่เหมาะสมให้แต่ละฉาก
-- [ ] สร้าง workflow ปรึกษา Gemini ก่อนพัฒนาระบบสำคัญ โดยรวมคำถามด้านทางเลือก ความเสี่ยง แนวปฏิบัติ และข้อเสนอแนะเพิ่มเติมไว้ในทุกคำขอ
-- [ ] ประเมินและนำข้อเสนอแนะจาก Gemini มาใช้เป็นค่าเริ่มต้นทุกครั้งที่ไม่ขัดกับความปลอดภัย ข้อมูลผู้เล่น หรือข้อจำกัดทางเทคนิคของเกม
+- [x] สร้าง workflow ปรึกษา Gemini ก่อนพัฒนาระบบสำคัญ โดยรวมคำถามด้านทางเลือก ความเสี่ยง แนวปฏิบัติ และข้อเสนอแนะเพิ่มเติมไว้ในทุกคำขอ
+- [x] ประเมินและนำข้อเสนอแนะจาก Gemini มาใช้เป็นค่าเริ่มต้นทุกครั้งที่ไม่ขัดกับความปลอดภัย ข้อมูลผู้เล่น หรือข้อจำกัดทางเทคนิคของเกม
 - [x] สร้าง map framework และ catalog ที่รองรับอย่างน้อย 100 แผนที่แบบ data-driven และโหลดเป็นโมดูลอิสระตามต้องการ
 - [x] กำหนด template งานต่อแผนที่ที่รวม prompt ขอไอเดียจาก Gemini, biome content, NPC, ศัตรู, ทรัพยากร, เหตุการณ์, boss, การทดสอบ และเกณฑ์ส่งมอบ
 - [ ] commit และ push การเปลี่ยนแปลงไปยัง A_Survival หลังแผนที่หนึ่งเสร็จตามเกณฑ์ พร้อมข้อความ commit ที่ระบุชื่อแผนที่
-- [ ] ให้ Gemini ออกแบบ monster model หลายสายพันธุ์พร้อม silhouette พฤติกรรม จุดอ่อน เอฟเฟกต์ และของดรอปสำหรับแต่ละ biome
+- [x] ให้ Gemini ออกแบบ monster model หลายสายพันธุ์พร้อม silhouette พฤติกรรม จุดอ่อน เอฟเฟกต์ และของดรอปสำหรับแต่ละ biome
 - [x] สร้าง roster มอนสเตอร์ประจำ biome ระดับ elite และ event/boss เฉพาะ biome เพื่อใช้ใน map module แต่ละแผนที่
 - [x] ปรับ art direction เป็น stylized low-resolution fantasy-sci-fi ที่มีกลิ่นอาย pixel แบบร่วมสมัย โดยไม่ใช้ pixel block แบบจ๋า
-- [ ] ให้ Gemini ออกแบบ monster model หลายสายพันธุ์พร้อม silhouette พฤติกรรม จุดอ่อน เอฟเฟกต์ และของดรอปสำหรับแต่ละ biome
+- [x] ให้ Gemini ออกแบบ monster model หลายสายพันธุ์พร้อม silhouette พฤติกรรม จุดอ่อน เอฟเฟกต์ และของดรอปสำหรับแต่ละ biome
 - [x] สร้าง roster มอนสเตอร์ประจำ biome ระดับ elite และ event/boss เฉพาะ biome เพื่อใช้ใน map module แต่ละแผนที่
 - [x] เขียน relationship tests สำหรับ Player ID–profile–inventory instance–provenance, พืช–ดิน–ผลผลิต, สัตว์เลี้ยง–อุปกรณ์, scene transition–cache และ offline sync
 - [x] เพิ่ม invariant checks ที่จุดเข้า Lobby เข้าแผนที่ ออกจากแผนที่ และก่อน/หลังซิงก์ เพื่อป้องกันสถานะเกมไม่สอดคล้องกัน
@@ -87,11 +87,11 @@
 - [x] สร้าง fallback model protocol ที่สลับ Gemini รุ่นทางเลือกอัตโนมัติหลัง cooldown เมื่อรุ่นเดิม error และแจ้งผู้ใช้เฉพาะเมื่อทางเลือกที่รองรับใช้ไม่ได้ทั้งหมด
 - [x] สร้าง fallback model protocol ที่สลับ Gemini รุ่นทางเลือกอัตโนมัติหลัง cooldown เมื่อรุ่นเดิม error และแจ้งผู้ใช้เฉพาะเมื่อทางเลือกที่รองรับใช้ไม่ได้ทั้งหมด
 - [x] ประเมิน master plan ที่ได้จาก Gemini และบันทึกแนวทางที่นำมาใช้ใน GEMINI_ADOPTED_PLAN.md
-- [ ] ทำ engine migration assessment ตามข้อเสนอ Gemini สำหรับ Phaser 3 + Three.js แบบ 2.5D โดยรักษา Babylon.js prototype ที่เล่นได้ระหว่างเปลี่ยนผ่าน
+- [x] ทำ engine migration assessment ตามข้อเสนอ Gemini สำหรับ Phaser 3 + Three.js แบบ 2.5D โดยรักษา Babylon.js prototype ที่เล่นได้ระหว่างเปลี่ยนผ่าน
 - [x] เพิ่ม IndexedDB transaction store, vector clock และ background sync queue ตามแผน Gemini เพื่อแทน localStorage สำหรับข้อมูลเกมสำคัญ
 - [x] สร้าง MAP_001 Obsidian Outpost ตาม brief Gemini ให้ครบ loading, cache, NPC, resource, monster, surprise encounter และ night boss ก่อน commit ขึ้น GitHub
-- [ ] ใช้ Gemini image brief รูป “สร้างพร้อมสำหรับ… / จุดประสงค์ของภาพ…” แล้วดึงภาพเกมผ่าน Pollinations.ai Image Generation API พร้อม prompt/seed/model metadata ที่สร้างซ้ำได้
-- [ ] แทน player, enemy, resource และฉาก placeholder ที่วาดด้วยทรงเรขาคณิตใน Babylon ด้วย asset image/texture ที่ได้จาก Pollinations และแคชไว้เล่นออฟไลน์
+- [x] ใช้ Gemini image brief รูป “สร้างพร้อมสำหรับ… / จุดประสงค์ของภาพ…” แล้วดึงภาพเกมผ่าน Pollinations.ai Image Generation API พร้อม prompt/seed/model metadata ที่สร้างซ้ำได้
+- [x] แทน player, enemy, resource และฉาก placeholder ที่วาดด้วยทรงเรขาคณิตใน Babylon ด้วย asset image/texture ที่ได้จาก Pollinations และแคชไว้เล่นออฟไลน์
 - [x] MAP_001: ใช้ asset texture จาก Pollinations แทน player, Glass Stalker, Ley Crystal และ Void Reaper boss placeholder ในฉาก Babylon และใช้ key art ในหน้าโหลด
 - [x] พัฒนาและส่งมอบ 10 แผนที่แรกในวันนี้ตาม template รายแผนที่ พร้อม commit ที่ระบุชื่อแผนที่
 - [x] ดำเนินงานเพิ่มชุดละ 5 แผนที่จากแผนที่ที่ 11 จนถึงแผนที่ที่ 100 ต่อเมื่อผู้ใช้สั่งเท่านั้น พร้อมหยุดเมื่อ quota หรือข้อจำกัดทำให้ไม่สามารถทำตามเกณฑ์รายแผนที่ได้
