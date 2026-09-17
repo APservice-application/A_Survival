@@ -66,3 +66,31 @@ export function getPerformanceBudgetLabel(tier: unknown): string {
   const normalized = normalizePerformanceTier(tier);
   return normalized === "low" ? "ประหยัดอุปกรณ์" : normalized === "high" ? "คุณภาพสูง" : "สมดุล";
 }
+
+export const EFFECT_INTENSITIES = ["low", "medium", "high"] as const;
+export type EffectIntensity = (typeof EFFECT_INTENSITIES)[number];
+
+export const EFFECT_INTENSITY_FACTOR: Record<EffectIntensity, number> = {
+  low: 0.45,
+  medium: 0.75,
+  high: 1,
+};
+
+export function normalizeEffectIntensity(value: unknown): EffectIntensity {
+  return typeof value === "string" && (EFFECT_INTENSITIES as readonly string[]).includes(value) ? (value as EffectIntensity) : "high";
+}
+
+export function getEffectiveParticleCount(baseCount: number, effectIntensity: unknown): number {
+  const normalized = normalizeEffectIntensity(effectIntensity);
+  const factor = EFFECT_INTENSITY_FACTOR[normalized];
+  const raw = Math.floor(baseCount * factor);
+  // Clamp to at least 12 particles so low still renders minimal VFX, and never above base.
+  return Math.max(12, Math.min(baseCount, raw));
+}
+
+export function getPerformanceBudgetWithEffect(tier: unknown, effectIntensity: unknown, requestedViewDistanceBlocks?: unknown, requestedTargetFps?: unknown): PerformanceBudget & { viewDistanceBlocks: ViewDistanceBlocks; targetFps: TargetFps; effectIntensity: EffectIntensity; effectiveParticleCount: number } {
+  const base = getPerformanceBudget(tier, requestedViewDistanceBlocks, requestedTargetFps);
+  const intensity = normalizeEffectIntensity(effectIntensity);
+  const effectiveParticleCount = getEffectiveParticleCount(base.maxParticleCount, intensity);
+  return { ...base, effectIntensity: intensity, effectiveParticleCount };
+}

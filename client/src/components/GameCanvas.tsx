@@ -9,12 +9,13 @@ import { setActiveAssetPackManifest } from "@/game/assets/pixelPack";
 import type { BlockToolTag, WorldBlock } from "@/game/data/blockModules";
 import type { ItemInstance } from "@/game/data/catalog";
 import type { WorldPlantState } from "@/game/systems/worldFarmingSystem";
-import { getPerformanceBudget, type PerformanceTier } from "@/game/systems/performanceProfile";
+import { getPerformanceBudget, type EffectIntensity, type PerformanceTier } from "@/game/systems/performanceProfile";
 import { createRuntimePerformanceSampler, type RuntimePerformanceTelemetrySnapshot } from "@/game/systems/runtimePerformanceTelemetry";
 
 type GameCanvasProps = {
   mapId: string;
   reducedMotion?: boolean;
+  effectIntensity?: EffectIntensity;
   performanceTier?: PerformanceTier;
   onSnapshot?: (snapshot: GameSnapshot) => void;
   onPerformanceSnapshot?: (snapshot: RuntimePerformanceTelemetrySnapshot) => void;
@@ -44,7 +45,7 @@ type GameCanvasProps = {
 };
 
 export default function GameCanvas(props: GameCanvasProps) {
-  const { mapId, reducedMotion, performanceTier, renderDistance, cameraMode, viewDistanceBlocks } = props;
+  const { mapId, reducedMotion, effectIntensity, performanceTier, renderDistance, cameraMode, viewDistanceBlocks } = props;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const performanceBudgetRef = useRef(getPerformanceBudget(performanceTier, viewDistanceBlocks, props.targetFps));
   const startedRef = useRef(false);
@@ -53,7 +54,7 @@ export default function GameCanvas(props: GameCanvasProps) {
 
   useEffect(() => {
     performanceBudgetRef.current = getPerformanceBudget(performanceTier, viewDistanceBlocks, props.targetFps);
-  }, [performanceTier, viewDistanceBlocks, props.targetFps]);
+  }, [performanceTier, viewDistanceBlocks, props.targetFps, effectIntensity]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -89,6 +90,7 @@ export default function GameCanvas(props: GameCanvasProps) {
         get worldFarmState() { return latestPropsRef.current.worldFarmState; },
         get companion() { return latestPropsRef.current.companion; },
         get reducedMotion() { return latestPropsRef.current.reducedMotion; },
+        get effectIntensity() { return latestPropsRef.current.effectIntensity; },
         get performanceTier() { return latestPropsRef.current.performanceTier; },
         get renderDistance() { return latestPropsRef.current.renderDistance; },
         get viewDistanceBlocks() { return latestPropsRef.current.viewDistanceBlocks; },
